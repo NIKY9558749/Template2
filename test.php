@@ -46,6 +46,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $response_data = json_decode($response, true);
             if (isset($response_data['message']['content'][0]['text'])) {
                 $ai_response = $response_data['message']['content'][0]['text'];
+                // --- AGGIUNTA STORICO DOMANDE/RISPOSTE ---
+                $storico_file = 'domande.json';
+                $storico = [];
+                if (file_exists($storico_file)) {
+                    $json = file_get_contents($storico_file);
+                    $storico = json_decode($json, true);
+                    if (!is_array($storico)) $storico = [];
+                }
+                $storico[] = [
+                    'domanda' => $domanda,
+                    'risposta' => $ai_response,
+                    'timestamp' => date('Y-m-d H:i:s')
+                ];
+                file_put_contents($storico_file, json_encode($storico, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                // --- FINE AGGIUNTA STORICO ---
             } else {
                 $ai_response = "Errore nella risposta dell'API: " . json_encode($response_data);
             }
